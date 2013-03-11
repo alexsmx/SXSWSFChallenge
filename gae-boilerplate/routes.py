@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Using redirect route instead of simple routes since it supports strict_slash
 Simple route: http://webapp-improved.appspot.com/guide/routing.html#simple-routes
@@ -17,7 +18,7 @@ _routes = [
     RedirectRoute('/searchCrunch/', handlers.searchCrunchBaseHandler, name='searchCrunchHandler', strict_slash=True),
     RedirectRoute('/addProfile/', handlers.addProfileHandler, name='add-profile', strict_slash=True),
     RedirectRoute('/addTaskProfile/', handlers.addTaskProfileHandler, name='add-task-profile', strict_slash=True),
-    
+    RedirectRoute('/addTaskInvestors/', handlers.addTaskInvestorsHandler, name='add-task-investors', strict_slash=True),
 ]
 
 def get_routes():

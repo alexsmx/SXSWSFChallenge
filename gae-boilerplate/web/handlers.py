@@ -16,6 +16,7 @@ from boilerplate import models
 from boilerplate.lib.basehandler import BaseHandler
 from boilerplate.lib.basehandler import user_required
 from google.appengine.api import taskqueue
+from web import models as local_models
 
 
 class SecureRequestHandler(BaseHandler):
@@ -71,16 +72,16 @@ class searchAngelHandler(BaseHandler):
             self.response.out.write('{}')
 
 def getAngelProfile(id):
-    url='https://api.angel.co/1/search?query=' + term + ''
+    url='https://api.angel.co/1/search?query=' + term + '&type=User'
     response = urllib2.urlopen(url)
     json_data = json.loads(response.read())
-    pass
+    return json_data
 
 def getCrunchProfile(id):
-    url='https://api.angel.co/1/search?query=' + term + ''
+    url= 'http://api.crunchbase.com/v/1/search.js?query=' + term + '&api_key=a3atu3g9gkmpfbcrdey8w6hz'
     response = urllib2.urlopen(url)
     json_data = json.loads(response.read())
-    pass
+    return json_data
 
 class searchCrunchBaseHandler(BaseHandler):
     def get(self):
@@ -111,10 +112,65 @@ class addProfileHandler(BaseHandler):
                 })
 
 
+def getJsonUrlData(url1):
+    logging.info(url1)
+    response= urllib2.urlopen(url1)
+    json_data = json.loads(response.read())
+    return json_data
+    
 class addTaskProfileHandler(BaseHandler):
     def get(self):
         source= self.request.get('source')
         id=self.request.get('id')
+        url1=''
+        if source=='CrunchBase':
+            pass
+        elif source=='AngelList':
+            url1='https://api.angel.co/1/users/' + id
+            url2 = 'https://api.angel.co/1/users/' + id + '/startups'
+            datoUsuario=getJsonUrlData(url1)
+            datosStartups=getJsonUrlData(url2)
+            roles=datosStartups['startup_roles']
+            lista_startups_ids=[]
+            lista_startups_nombres=[]
+            for role in roles:
+                #logging.info('%s %s %s %s %s' % (role['role'],role['startup']['id'], role['startup']['name'],role['started_at'],role['ended_at']))
+                lista_startups_ids.append(role['startup']['id'])
+                lista_startups_nombres.append(role['startup']['name'])
+            #logging.info(lista_startups_ids)
+            #logging.info(lista_startups_nombres)
+            profile_ndb= local_models.ProfileData.query(local_models.ProfileData.identificador==id).fetch()
+            if len(profile_ndb)==0:
+                profile_ndb= local_models.ProfileData(source=source, identificador=id, name=datoUsuario['name'], location=json.dumps(datoUsuario['locations']),
+                    tweeter_profile=datoUsuario['twitter_url'], startups_ids=json.dumps(lista_startups_ids), startups_nombres=json.dumps(lista_startups_nombres))
+                profile_ndb.put()
+        else:
+            pass
+
+class addTaskInvestorsHandler(BaseHandler):
+    def get(self):
+        source =self.request.get('source')
+        id=self.request.get('id')
+        url1=''
+        if source=='CrunchBase':
+            pass
+        elif source=='AngelList':
+            url2 = 'https://api.angel.co/1/users/' + id + '/startups'
+            datosStartups=getJsonUrlData(url2)        
+            for startup in datosStartups['startup_roles']:
+                if startup['role']=='past_investor':
+                    id_comp= startup['startup']['id']
+                    profile_ndb= local_models.Company.query(local_models.Company.identificador==str(id_comp)).fetch()
+                    if len(profile_ndb)==0:            
+                        lista_investors_names=[]
+                        url3 = 'https://api.angel.co/1/startup_roles?startup_id=' + str(startup['startup']['id'])
+                        inversionistas= getJsonUrlData(url3)
+                        for role in inversionistas['startup_roles']:
+                            if role['role']=='past_investor':
+                                logging.info(role['user']['name'])
+                                lista_investors_names.append(role['user']['name'])
+                        profile_ndb=local_models.Company(source=source, identificador=str(id_comp), name='test', investors=json.dumps(lista_investors_names) )
+                        profile_ndb.put()
 
 
 def levenshtein(s1, s2):
