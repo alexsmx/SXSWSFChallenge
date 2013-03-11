@@ -147,6 +147,7 @@ function getCrunchBase(querystring){
 function makeCrunchResultRow(valor){
 	var pic = '/img/logo.png';
 	var id='';
+	var namespace='';
 	var strresult= '<table  border="0" width="100%">'
 	strresult =strresult +  '<tr><td>Source</td><td>CrunchBase</td></tr>'
 		$.each(valor,function(indice2, valor2){
@@ -154,6 +155,10 @@ function makeCrunchResultRow(valor){
 	    		link= false;
 	    		if (indice2=='permalink'){
 	    			id=valor2;
+	    		}
+	    		if(indice2=='namespace'){
+	    			namespace=valor2;
+
 	    		}
 	    		if (indice2=='image' && valor2!=null){
 	    			if(typeof valor2 ==="object"){
@@ -182,8 +187,13 @@ function makeCrunchResultRow(valor){
 	
 	strresult =strresult +  '<tr><td></td><td><button onclick="addToProfileDB(\''+ 'CrunchBase' +'\',\'' + id + '\')" class="btn btn-primary">Add to profile database.</button></td></tr></table>'
 	strresult2= '<table width="" border="0" ><tr><td width="100px"><img width="100px" src="' + pic +'"/></td><td>' + strresult + '</td></tr></table>'
-	return strresult2;
+	if(namespace!='person'){
+		return '';
+	}else{
+		return strresult2;	
+	}
 }
+
 function makeAngelResultRow(valor){
 	var pic = '/img/logo.png';
 	var strresult= '<table border="0" width="100%">'
@@ -195,6 +205,7 @@ function makeAngelResultRow(valor){
 	    		if (indice2=='id'){
 	    			id=valor2;
 	    		}
+	    		
 	    		if (indice2=='pic' && valor2!=null){
 	    			pic= valor2;
 	    		}else{
@@ -219,7 +230,9 @@ function makeAngelResultRow(valor){
 	    	});
 	strresult =strresult +  '<tr><td></td><td><button onclick="addToProfileDB(\''+ 'AngelList' +'\',\'' + id + '\')" class="btn btn-primary">Add to profile database.</button></td></tr></table>'
 	strresult2= '<table border="0" width=""><tr><td width="100px"><img width="100px" src="' + pic +'"/></td><td>' + strresult + '</td></tr></table>'
-	return strresult2;
+	
+	return strresult2;	
+	
 }
 function is_relevant( namefound){
 	var relevant= false;

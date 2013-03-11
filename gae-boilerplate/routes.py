@@ -15,6 +15,8 @@ _routes = [
     RedirectRoute('/admin/search/', handlers.adminSearchHandler, name='admin-search', strict_slash=True),
     RedirectRoute('/searchAngel/', handlers.searchAngelHandler, name='searchAngelHandler', strict_slash=True),
     RedirectRoute('/searchCrunch/', handlers.searchCrunchBaseHandler, name='searchCrunchHandler', strict_slash=True),
+    RedirectRoute('/addProfile/', handlers.addProfileHandler, name='add-profile', strict_slash=True),
+    RedirectRoute('/addTaskProfile/', handlers.addTaskProfileHandler, name='add-task-profile', strict_slash=True),
     
 ]
 

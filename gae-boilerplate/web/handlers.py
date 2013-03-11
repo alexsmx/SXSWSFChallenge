@@ -15,6 +15,7 @@ import urllib, urllib2
 from boilerplate import models
 from boilerplate.lib.basehandler import BaseHandler
 from boilerplate.lib.basehandler import user_required
+from google.appengine.api import taskqueue
 
 
 class SecureRequestHandler(BaseHandler):
@@ -60,7 +61,7 @@ class searchAngelHandler(BaseHandler):
             logging.info(urllib.quote(term))
             term= urllib.quote(term)
 
-            url='https://api.angel.co/1/search?query=' + term + ''
+            url='https://api.angel.co/1/search?query=' + term + '&type=User'
             logging.info(url)
             response = urllib2.urlopen(url)
             json_data = response.read()
@@ -69,13 +70,25 @@ class searchAngelHandler(BaseHandler):
         else:
             self.response.out.write('{}')
 
+def getAngelProfile(id):
+    url='https://api.angel.co/1/search?query=' + term + ''
+    response = urllib2.urlopen(url)
+    json_data = json.loads(response.read())
+    pass
+
+def getCrunchProfile(id):
+    url='https://api.angel.co/1/search?query=' + term + ''
+    response = urllib2.urlopen(url)
+    json_data = json.loads(response.read())
+    pass
+
 class searchCrunchBaseHandler(BaseHandler):
     def get(self):
         term= self.request.get('terms').strip()
         if term !='':
             logging.info(urllib.quote(term))
             term= urllib.quote(term)
-            url= 'http://api.crunchbase.com/v/1/search.js?query=' + term + '&api_key=a3atu3g9gkmpfbcrdey8w6hz'
+            url= 'http://api.crunchbase.com/v/1/search.js?query=' + term + '&api_key=a3atu3g9gkmpfbcrdey8w6hz&namespace=people'
             logging.info(url)
             response= urllib2.urlopen(url)
             json_data=response.read()
@@ -83,6 +96,26 @@ class searchCrunchBaseHandler(BaseHandler):
             self.response.out.write( json_data)
         else:
             self.response.out.write('{}')
+
+class addProfileHandler(BaseHandler):
+    def get(self):
+        source= self.request.get('source')
+        id=self.request.get('id')
+        if source.strip()=='' or id.strip()=='':
+            pass
+        else:
+            add_profile_url = self.uri_for('add-task-profile')
+            taskqueue.add(url = add_profile_url, params={
+                'source': str(source),
+                'id' : id,
+                })
+
+
+class addTaskProfileHandler(BaseHandler):
+    def get(self):
+        source= self.request.get('source')
+        id=self.request.get('id')
+
 
 def levenshtein(s1, s2):
     if len(s1) < len(s2):
@@ -103,4 +136,5 @@ def levenshtein(s1, s2):
         previous_row = current_row
  
     return previous_row[-1]
-    
+
+
