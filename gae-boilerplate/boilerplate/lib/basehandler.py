@@ -351,5 +351,6 @@ class BaseHandler(webapp2.RequestHandler):
         if self.messages:
             kwargs['messages'] = self.messages
 
+        self.response.headers.add_header("Access-Control-Allow-Origin", "*")
         self.response.headers.add_header('X-UA-Compatible', 'IE=Edge,chrome=1')
         self.response.write(self.jinja2.render_template(filename, **kwargs))

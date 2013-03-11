@@ -9,6 +9,244 @@
       <!--Body content-->
       <div class="well">
         <h1> Start Searching!</h2>
-        <div></div>
+        	<p>Search something on the most important Startup Databases: AngelList and CrunchBase (you can search by Startups, Users, Market Tags and Location Tags names ) </p>
+        	<form class="form-search" id="frmsearchStartups">
+			  <input id="txtSearch" type="text" class="input-medium search-query"><button  class="btn" onclick="searchDatabases(); return false; ">Search</button>
+			  <label class="checkbox">
+      		  <input id="chkAngel" type="checkbox" checked> AngelList</label>
+    		  <label  class="checkbox">
+    		  <input id="chkCrunch" type="checkbox" checked>CrunchBase</label>
+			</form>
+        <div  id="searchResultAngel">
+        </div>
+        <div  id="searchResultCrunch">
+        </div>
+        <div>
+        	<div class="pagination">
+			  <ul>
+			    <li><a onclick="pagination();return false;" href="#">Prev</a></li>
+			    <li><a onclick="pagination();return false;" href="#">1</a></li>
+			    <li><a onclick="pagination();return false;" href="#">2</a></li>
+			    <li><a onclick="pagination();return false;" href="#">3</a></li>
+			    <li><a onclick="pagination();return false;" href="#">4</a></li>
+			    <li><a onclick="pagination();return false;" href="#">5</a></li>
+			    <li><a onclick="pagination();return false;" href="#">Next</a></li>
+			  </ul>
+			</div>
+		</div>
       </div
     {% endblock %}
+
+
+{% block mediaJS %}
+<script>
+var palabras;
+$().ready( function(){
+
+	$("#txtSearch").keypress(function(event) {
+	  if ( event.which == 13 ) {   
+	 	event.preventDefault();
+	    searchDatabases();
+	  }
+	});
+	$('#frmsearchStartups').ajaxForm();
+});
+
+function addToProfileDB(source, id){
+	alert(source + id);
+}
+function pagination(){
+	alert('not implemented. check soon.')	
+}
+function searchDatabases(){
+	var busquedas=0;
+	var searchvars = $('#txtSearch').val().toUpperCase();
+	palabras =searchvars.split(' ');
+	$('#searchResultAngel').html('');
+	$('#searchResultCrunch').html('');
+	if($("#chkAngel").is(':checked')){
+		busquedas ++;
+		getAngelList(searchvars);
+	}
+	if($("#chkCrunch").is(':checked')){
+		busquedas ++;
+		getCrunchBase(searchvars);
+	}
+	if (busquedas==0){
+		alert('Must select at least one database (AngelList, CrunchBase).');
+	}
+	console.log(searchvars);
+}
+
+function getAngelList(querystring){
+	var url = '/searchAngel/?terms=' + querystring;
+	var count= 0;
+	jQuery.ajax({
+	  url: url,
+	  type: 'GET',
+	  dataType: 'json',
+	  complete: function(xhr, textStatus) {
+	    //called when complete
+	  },
+	  success: function(data, textStatus, xhr) {
+	    //called when successful
+	    console.log(data);
+	    strresult= '<table class="table" border="0">';
+	    $.each(data, function( indice,valor ) {
+	    	strresult = strresult + '<tr><td>'+ makeAngelResultRow(valor) +'</td></tr>'
+	    	count ++;
+	    });
+	    strresult = strresult + '</table>'
+	    if (count==0){
+	    	strresult='No results found.'
+	    }
+		$('#searchResultAngel').html(strresult);
+	  },
+	  error: function(xhr, textStatus, errorThrown) {
+	    //called when there is an error
+
+	  }
+	});
+	
+}
+
+function getCrunchBase(querystring){
+	var url = '/searchCrunch/?terms=' + querystring;
+	var count= 0;
+	jQuery.ajax({
+	  url: url,
+	  type: 'GET',
+	  dataType: 'json',
+	  complete: function(xhr, textStatus) {
+	    //called when complete
+	  },
+	  success: function(data, textStatus, xhr) {
+	    //called when successful
+	    console.log(data);
+	    strresult= '<table class="table" border="0">';
+	    if(typeof data.results ==='object' && data.results != null){
+	    	$.each(data.results, function( indice,valor ) {
+		    	strresult = strresult + '<tr><td>'+ makeCrunchResultRow(valor) +'</td></tr>'
+		    	count ++;
+		    });
+	    }
+	    strresult = strresult + '</table>'
+	    if (count==0){
+	    	strresult='No results found.'
+	    }
+		$('#searchResultCrunch').html(strresult);
+	  },
+	  error: function(xhr, textStatus, errorThrown) {
+	    //called when there is an error
+
+	  }
+	});
+	
+}
+
+function makeCrunchResultRow(valor){
+	var pic = '/img/logo.png';
+	var id='';
+	var strresult= '<table  border="0" width="100%">'
+	strresult =strresult +  '<tr><td>Source</td><td>CrunchBase</td></tr>'
+		$.each(valor,function(indice2, valor2){
+	    		//alert(indice2 + valor2);
+	    		link= false;
+	    		if (indice2=='permalink'){
+	    			id=valor2;
+	    		}
+	    		if (indice2=='image' && valor2!=null){
+	    			if(typeof valor2 ==="object"){
+	    				pic = 'http://www.crunchbase.com/' + valor2.available_sizes[0][1];	
+	    			}
+	    			
+	    		}else{
+	    			if( typeof indice2 !=='object' && indice2!='image' && valor2 != null && indice2!='overview'){
+	    				strresult =strresult + '<tr><td>'+ indice2 +'</td><td>'
+		    			if (indice2 =='crunchbase_url'){
+		    				strresult =strresult + '<a href="' + valor2 +'" target="_blank">';
+		    			}
+		    			strresult =strresult + valor2 
+		    			if (indice2 =='url'){
+		    				strresult =strresult + '</a>';
+		    			}
+		    			if((indice2=='first_name' ||indice2=='last_name' ) && is_relevant(valor2)){
+		    				strresult=strresult + ' <span class="label label-warning">relevant</span>'
+		    			}
+		    			strresult =strresult + '</td></tr>';
+	    			}
+		    			
+	    		}
+	    		
+	    	});
+	
+	strresult =strresult +  '<tr><td></td><td><button onclick="addToProfileDB(\''+ 'CrunchBase' +'\',\'' + id + '\')" class="btn btn-primary">Add to profile database.</button></td></tr></table>'
+	strresult2= '<table width="" border="0" ><tr><td width="100px"><img width="100px" src="' + pic +'"/></td><td>' + strresult + '</td></tr></table>'
+	return strresult2;
+}
+function makeAngelResultRow(valor){
+	var pic = '/img/logo.png';
+	var strresult= '<table border="0" width="100%">'
+	var id= '';
+	strresult =strresult +  '<tr><td>Source</td><td>AngelList</td></tr>'
+	$.each(valor,function(indice2, valor2){
+	    		//alert(indice2 + valor2);
+	    		link= false;
+	    		if (indice2=='id'){
+	    			id=valor2;
+	    		}
+	    		if (indice2=='pic' && valor2!=null){
+	    			pic= valor2;
+	    		}else{
+	    			if(indice2!='pic' && valor2 != null){
+	    				strresult =strresult + '<tr><td>'+ indice2 +'</td><td>'
+		    			if (indice2 =='url'){
+		    				strresult =strresult + '<a href="' + valor2 +'" target="_blank">';
+		    			}
+		    			strresult =strresult + valor2 
+		    			if (indice2 =='url'){
+		    				strresult =strresult + '</a>';
+		    			}
+		    			if((indice2=='name' ) && is_relevant(valor2)){
+		    				strresult=strresult + ' <span class="label label-warning">relevant</span>'
+		    			}
+		    			strresult =strresult + '</td></tr>';
+
+	    			}
+		    			
+	    		}
+	    		
+	    	});
+	strresult =strresult +  '<tr><td></td><td><button onclick="addToProfileDB(\''+ 'AngelList' +'\',\'' + id + '\')" class="btn btn-primary">Add to profile database.</button></td></tr></table>'
+	strresult2= '<table border="0" width=""><tr><td width="100px"><img width="100px" src="' + pic +'"/></td><td>' + strresult + '</td></tr></table>'
+	return strresult2;
+}
+function is_relevant( namefound){
+	var relevant= false;
+	var palabras_nombre= namefound.toUpperCase().split(' ');
+	$.each(palabras,function(indice, valor){
+		$.each(palabras_nombre,function(indice2,valor2){
+			if (valor2 == valor){
+				relevant=true;
+				return true;
+			}
+		});
+		
+
+	});
+	return relevant;
+}
+function levenshteinDistance (s, t) {
+        if (!s.length) return t.length;
+        if (!t.length) return s.length;
+ 
+        return Math.min(
+                levenshteinDistance(s.substr(1), t) + 1,
+                levenshteinDistance(t.substr(1), s) + 1,
+                levenshteinDistance(s.substr(1), t.substr(1)) + (s[0] !== t[0] ? 1 : 0)
+        );
+}
+
+</script>
+
+{% endblock %}

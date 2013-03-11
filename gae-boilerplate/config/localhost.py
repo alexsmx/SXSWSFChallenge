@@ -18,6 +18,7 @@ config = {
 
 # application name
 'app_name' : "SXSW SF Challenge :)",
+'environment' : "localhost",
 
 # the default language code for the application.
 # should match whatever language the site uses when i18n is disabled

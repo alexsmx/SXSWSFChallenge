@@ -13,6 +13,9 @@ _routes = [
     RedirectRoute('/secure/', handlers.SecureRequestHandler, name='secure', strict_slash=True),
     RedirectRoute('/admin/home/', handlers.adminHomeHandler, name='admin-home', strict_slash=True),
     RedirectRoute('/admin/search/', handlers.adminSearchHandler, name='admin-search', strict_slash=True),
+    RedirectRoute('/searchAngel/', handlers.searchAngelHandler, name='searchAngelHandler', strict_slash=True),
+    RedirectRoute('/searchCrunch/', handlers.searchCrunchBaseHandler, name='searchCrunchHandler', strict_slash=True),
+    
 ]
 
 def get_routes():
